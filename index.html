@@ -108,7 +108,7 @@
                 options: ["do", "does", "is", "are"],
                 answer: "do"
             },
-            // Verbo To Be y Pronombres
+            // Pronombres y Verbo To Be
             {
                 id: 4,
                 prompt: "____ am an English teacher.",
@@ -127,30 +127,31 @@
                 options: ["am", "are", "is", "do"],
                 answer: "is"
             },
-            // Artículos (a / an) y Profesiones
+            // Articulo general (solo uno de a/an para repasar)
             {
                 id: 7,
                 prompt: "Mr. Garcia is ____ English teacher.",
                 options: ["a", "an", "the", "---"],
                 answer: "an"
             },
+            // Estilo analítico tipo ejercicio 10 (profesiones y estructuras)
             {
                 id: 8,
-                prompt: "She is ____ artist.",
-                options: ["a", "an", "the", "---"],
-                answer: "an"
-            },
-            {
-                id: 9,
-                prompt: "He is ____ doctor.",
-                options: ["a", "an", "the", "---"],
-                answer: "a"
-            },
-            {
-                id: 10,
                 prompt: "He is an ____.",
                 options: ["doctor", "engineer", "chef", "teacher"],
                 answer: "engineer"
+            },
+            {
+                id: 9,
+                prompt: "She works in a hospital. She is a ____.",
+                options: ["engineer", "doctor", "artist", "architect"],
+                answer: "doctor"
+            },
+            {
+                id: 10,
+                prompt: "Select the correct question for this answer: <br><em>'She is a chef.'</em>",
+                options: ["What do they do?", "What does she do?", "How old is she?", "Where are you from?"],
+                answer: "What does she do?"
             }
         ];
 
