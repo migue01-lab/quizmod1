@@ -13,16 +13,22 @@
             padding: 20px;
         }
         .container {
-            max-width: 650px;
+            max-width: 750px;
             margin: 0 auto;
             background: #fff;
             padding: 30px;
             border-radius: 10px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
-        h1 {
+        h1, h2 {
             text-align: center;
             color: #2c3e50;
+        }
+        h2 {
+            margin-top: 40px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+            font-size: 1.3em;
         }
         .exercise {
             margin-bottom: 25px;
@@ -31,6 +37,37 @@
             background: #ecf0f1;
             border-radius: 4px;
         }
+        /* Estilos Drag and Drop */
+        .word-bank, .drop-zone {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            min-height: 45px;
+            padding: 10px;
+            background: #fff;
+            border: 2px dashed #bdc3c7;
+            border-radius: 6px;
+            margin-top: 10px;
+            align-items: center;
+        }
+        .drop-zone {
+            border-color: #3498db;
+            background: #fdfefe;
+        }
+        .word-chip {
+            background-color: #3498db;
+            color: white;
+            padding: 8px 14px;
+            border-radius: 4px;
+            cursor: grab;
+            font-weight: bold;
+            user-select: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .word-chip:active {
+            cursor: grabbing;
+        }
+        /* Estilos Multiple Choice */
         .options-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -57,6 +94,7 @@
             background-color: #3498db;
             color: white;
         }
+        /* Botones y Feedback generales */
         button.check-btn {
             padding: 8px 20px;
             background-color: #2ecc71;
@@ -81,71 +119,153 @@
 </head>
 <body>
     <div class="container">
-        <h1>English Practice Exercises</h1>
-        <p style="text-align: center; color: #555;">Choose the correct option to complete each exercise.</p>
+        <h1>English Practice Exercises - Module 1</h1>
+        
+        <!-- SECCIÓN 1: DRAG AND DROP -->
+        <h2>Part 1: Drag and Drop</h2>
+        <p style="text-align: center; color: #555;">Drag and drop the words into the box to build the correct sentences and questions.</p>
+        <div id="drag-exercises-container"></div>
 
-        <div id="exercises-container"></div>
+        <!-- SECCIÓN 2: MULTIPLE CHOICE (Do, Does, To Be, Pronouns) -->
+        <h2>Part 2: Choose the Correct Option</h2>
+        <p style="text-align: center; color: #555;">Select the correct option to complete each grammar exercise.</p>
+        <div id="mc-exercises-container"></div>
     </div>
 
     <script>
-        const exercises = [
-            {
-                id: 1,
-                prompt: "He is an ____.",
-                options: ["doctor", "engineer", "chef", "teacher"],
-                answer: "engineer"
-            },
-            {
-                id: 2,
-                prompt: "They ____ professional engineers.",
-                options: ["is", "am", "are", "do"],
-                answer: "are"
-            },
-            {
-                id: 3,
-                prompt: "Select the correct question for this answer: <br><em>'She is a doctor.'</em>",
-                options: ["What do they do?", "What does she do?", "How old is she?", "Where are you from?"],
-                answer: "What does she do?"
-            },
-            {
-                id: 4,
-                prompt: "Complete the age question: <br><em>'____ old are you?'</em>",
-                options: ["What", "How", "Who", "When"],
-                answer: "How"
-            }
+        /* --- DATOS DE DRAG AND DROP --- */
+        const dragExercises = [
+            { id: 1, words: ["What", "does", "she", "do?"], answer: "What does she do?" },
+            { id: 2, words: ["She", "is", "a", "doctor"], answer: "She is a doctor" },
+            { id: 3, words: ["What", "do", "they", "do?"], answer: "What do they do?" },
+            { id: 4, words: ["They", "are", "engineers"], answer: "They are engineers" },
+            { id: 5, words: ["How", "old", "are", "you?"], answer: "How old are you?" }
         ];
 
-        const attempts = {};
-        const selectedValues = {};
-        const container = document.getElementById("exercises-container");
+        const dragAttempts = {};
+        const dragContainer = document.getElementById("drag-exercises-container");
 
-        exercises.forEach((ex, index) => {
-            attempts[ex.id] = 0;
+        dragExercises.forEach((ex, index) => {
+            dragAttempts[ex.id] = 0;
+            const shuffledWords = [...ex.words].sort(() => Math.random() - 0.5);
+
+            const div = document.createElement("div");
+            div.className = "exercise";
+            div.innerHTML = `
+                <p><strong>Exercise ${index + 1}</strong></p>
+                <div class="drop-zone" id="drop-${ex.id}" ondragover="allowDrop(event)" ondrop="drop(event)"></div>
+                <div class="word-bank" id="bank-${ex.id}" ondragover="allowDrop(event)" ondrop="dropToBank(event)">
+                    ${shuffledWords.map(w => `<div class="word-chip" draggable="true" ondragstart="drag(event)">${w}</div>`).join('')}
+                </div>
+                <button class="check-btn" onclick="checkDragAnswer(${ex.id}, '${ex.answer.replace(/'/g, "\\\\'")}')">Check</button>
+                <div id="feedback-drag-${ex.id}" class="feedback"></div>
+            `;
+            dragContainer.appendChild(div);
+        });
+
+        function allowDrop(ev) { ev.preventDefault(); }
+        function drag(ev) {
+            ev.dataTransfer.setData("text/plain", ev.target.outerHTML);
+            setTimeout(() => ev.target.remove(), 0);
+        }
+        function drop(ev) {
+            ev.preventDefault();
+            const data = ev.dataTransfer.getData("text/plain");
+            let targetZone = ev.target;
+            if (!targetZone.classList.contains('drop-zone')) targetZone = targetZone.closest('.drop-zone');
+            if (targetZone) {
+                targetZone.insertAdjacentHTML('beforeend', data);
+                makeChipsDraggable();
+            }
+        }
+        function dropToBank(ev) {
+            ev.preventDefault();
+            const data = ev.dataTransfer.getData("text/plain");
+            let targetBank = ev.target;
+            if (!targetBank.classList.contains('word-bank')) targetBank = targetBank.closest('.word-bank');
+            if (targetBank) {
+                targetBank.insertAdjacentHTML('beforeend', data);
+                makeChipsDraggable();
+            }
+        }
+        function makeChipsDraggable() {
+            document.querySelectorAll('.word-chip').forEach(chip => {
+                chip.setAttribute('draggable', 'true');
+                chip.ondragstart = drag;
+            });
+        }
+        function checkDragAnswer(id, correctAnswer) {
+            const dropZone = document.getElementById(`drop-${id}`);
+            const chips = dropZone.querySelectorAll('.word-chip');
+            const userSentence = Array.from(chips).map(chip => chip.textContent).join(" ");
+            const feedback = document.getElementById(`feedback-drag-${id}`);
+            
+            if (userSentence.toLowerCase() === correctAnswer.toLowerCase()) {
+                feedback.textContent = "Correct! Great job!";
+                feedback.className = "feedback correct";
+                dragAttempts[id] = -1;
+            } else {
+                dragAttempts[id]++;
+                if (dragAttempts[id] === 1) {
+                    feedback.textContent = "Incorrect. Try again!";
+                    feedback.className = "feedback incorrect";
+                    resetDragExercise(id);
+                } else {
+                    feedback.textContent = `Incorrect. The correct answer was: "${correctAnswer}"`;
+                    feedback.className = "feedback reveal";
+                }
+            }
+        }
+        function resetDragExercise(id) {
+            const ex = dragExercises.find(e => e.id === id);
+            const dropZone = document.getElementById(`drop-${id}`);
+            const bank = document.getElementById(`bank-${id}`);
+            dropZone.innerHTML = "";
+            const shuffledWords = [...ex.words].sort(() => Math.random() - 0.5);
+            bank.innerHTML = shuffledWords.map(w => `<div class="word-chip" draggable="true" ondragstart="drag(event)">${w}</div>`).join('');
+        }
+
+
+        /* --- DATOS DE MULTIPLE CHOICE --- */
+        const mcExercises = [
+            { id: 1, prompt: "What ____ you do?", options: ["do", "does", "is", "are"], answer: "do" },
+            { id: 2, prompt: "What ____ she do?", options: ["do", "does", "is", "are"], answer: "does" },
+            { id: 3, prompt: "____ am an English teacher.", options: ["He", "She", "I", "They"], answer: "I" },
+            { id: 4, prompt: "They ____ professional engineers.", options: ["is", "am", "are", "do"], answer: "are" },
+            { id: 5, prompt: "She ____ a doctor.", options: ["am", "are", "is", "do"], answer: "is" }
+        ];
+
+        const mcAttempts = {};
+        const mcSelectedValues = {};
+        const mcContainer = document.getElementById("mc-exercises-container");
+
+        mcExercises.forEach((ex, index) => {
+            mcAttempts[ex.id] = 0;
             const div = document.createElement("div");
             div.className = "exercise";
             div.innerHTML = `
                 <p><strong>Exercise ${index + 1}:</strong> ${ex.prompt}</p>
                 <div class="options-grid">
                     ${ex.options.map(opt => `
-                        <button class="option-btn" onclick="selectOption(this, ${ex.id}, '${opt}')">${opt}</button>
+                        <button class="option-btn" onclick="selectMcOption(this, ${ex.id}, '${opt}')">${opt}</button>
                     `).join('')}
                 </div>
-                <button class="check-btn" onclick="checkAnswer(${ex.id}, '${ex.answer}')">Check</button>
-                <div id="feedback-${ex.id}" class="feedback"></div>
+                <button class="check-btn" onclick="checkMcAnswer(${ex.id}, '${ex.answer}')">Check</button>
+                <div id="feedback-mc-${ex.id}" class="feedback"></div>
             `;
-            container.appendChild(div);
+            mcContainer.appendChild(div);
         });
 
-        function selectOption(button, id, value) {
+        function selectMcOption(button, id, value) {
             const grid = button.parentElement;
             grid.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('selected'));
             button.classList.add('selected');
-            selectedValues[id] = value;
+            mcSelectedValues[id] = value;
         }
 
-        function checkAnswer(id, correctAnswer) {
-            const feedback = document.getElementById(`feedback-${id}`);
-            const userSelection = selectedValues[id];
+        function checkMcAnswer(id, correctAnswer) {
+            const feedback = document.getElementById(`feedback-mc-${id}`);
+            const userSelection = mcSelectedValues[id];
 
             if (!userSelection) {
                 feedback.textContent = "Please select an option first.";
@@ -156,10 +276,10 @@
             if (userSelection.toLowerCase() === correctAnswer.toLowerCase()) {
                 feedback.textContent = "Correct! Great job!";
                 feedback.className = "feedback correct";
-                attempts[id] = -1;
+                mcAttempts[id] = -1;
             } else {
-                attempts[id]++;
-                if (attempts[id] === 1) {
+                mcAttempts[id]++;
+                if (mcAttempts[id] === 1) {
                     feedback.textContent = "Incorrect. Try again!";
                     feedback.className = "feedback incorrect";
                 } else {
