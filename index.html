@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>English Practice Exercises - Multiple Choice</title>
+    <title>English Practice Exercises - Module 1</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -82,7 +82,7 @@
 <body>
     <div class="container">
         <h1>English Practice Exercises</h1>
-        <p style="text-align: center; color: #555;">Choose the correct option to complete each sentence.</p>
+        <p style="text-align: center; color: #555;">Choose the correct option to complete each exercise.</p>
 
         <div id="exercises-container"></div>
     </div>
@@ -91,27 +91,27 @@
         const exercises = [
             {
                 id: 1,
-                sentence: "He is an ____.",
-                options: ["doctor", "engineer", "artist", "chef"],
+                prompt: "He is an ____.",
+                options: ["doctor", "engineer", "chef", "teacher"],
                 answer: "engineer"
             },
             {
                 id: 2,
-                sentence: "She is a ____.",
-                options: ["artist", "architect", "engineer", "doctor"],
-                answer: "doctor"
+                prompt: "They ____ professional engineers.",
+                options: ["is", "am", "are", "do"],
+                answer: "are"
             },
             {
                 id: 3,
-                sentence: "Mr. Garcia is an ____.",
-                options: ["teacher", "engineer", "actor", "doctor"],
-                answer: "actor"
+                prompt: "Select the correct question for this answer: <br><em>'She is a doctor.'</em>",
+                options: ["What do they do?", "What does she do?", "How old is she?", "Where are you from?"],
+                answer: "What does she do?"
             },
             {
                 id: 4,
-                sentence: "She is an ____.",
-                options: ["chef", "artist", "doctor", "student"],
-                answer: "artist"
+                prompt: "Complete the age question: <br><em>'____ old are you?'</em>",
+                options: ["What", "How", "Who", "When"],
+                answer: "How"
             }
         ];
 
@@ -124,7 +124,7 @@
             const div = document.createElement("div");
             div.className = "exercise";
             div.innerHTML = `
-                <p><strong>Exercise ${index + 1}:</strong> ${ex.sentence}</p>
+                <p><strong>Exercise ${index + 1}:</strong> ${ex.prompt}</p>
                 <div class="options-grid">
                     ${ex.options.map(opt => `
                         <button class="option-btn" onclick="selectOption(this, ${ex.id}, '${opt}')">${opt}</button>
@@ -156,7 +156,7 @@
             if (userSelection.toLowerCase() === correctAnswer.toLowerCase()) {
                 feedback.textContent = "Correct! Great job!";
                 feedback.className = "feedback correct";
-                attempts[id] = -1; // Bloquea más intentos al acertar
+                attempts[id] = -1;
             } else {
                 attempts[id]++;
                 if (attempts[id] === 1) {
